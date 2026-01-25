@@ -134,6 +134,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Registration Enabled
+    |--------------------------------------------------------------------------
+    |
+    | Set this to false to disable user registration. When disabled, the
+    | registration routes and views will not be available.
+    |
+    */
+
+    'registration_enabled' => env('FORTIFY_REGISTRATION_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Features
     |--------------------------------------------------------------------------
     |
@@ -143,8 +155,8 @@ return [
     |
     */
 
-    'features' => [
-        Features::registration(),
+    'features' => array_filter([
+        config('fortify.registration_enabled') ? Features::registration() : null,
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
@@ -152,6 +164,6 @@ return [
             'confirmPassword' => true,
             // 'window' => 0,
         ]),
-    ],
+    ]),
 
 ];

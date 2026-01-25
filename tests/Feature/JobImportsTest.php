@@ -48,3 +48,34 @@ test('user can view all imports when filter is set', function () {
         ->set('status', 'all')
         ->assertSee($completed->id);
 });
+
+test('user can clear pending imports', function () {
+    $user = User::factory()->create();
+
+    $queued = ExtractionJob::factory()->for($user)->create([
+        'status' => ExtractionJobStatus::Queued,
+    ]);
+    $processing = ExtractionJob::factory()->for($user)->create([
+        'status' => ExtractionJobStatus::Processing,
+    ]);
+    $needsReview = ExtractionJob::factory()->for($user)->create([
+        'status' => ExtractionJobStatus::NeedsReview,
+    ]);
+    $failed = ExtractionJob::factory()->for($user)->create([
+        'status' => ExtractionJobStatus::Failed,
+    ]);
+    $otherUserJob = ExtractionJob::factory()->create([
+        'status' => ExtractionJobStatus::Queued,
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(JobImports::class)
+        ->call('clearPendingImports');
+
+    $this->assertDatabaseMissing('extraction_jobs', ['id' => $queued->id]);
+    $this->assertDatabaseMissing('extraction_jobs', ['id' => $processing->id]);
+    $this->assertDatabaseHas('extraction_jobs', ['id' => $needsReview->id]);
+    $this->assertDatabaseHas('extraction_jobs', ['id' => $failed->id]);
+    $this->assertDatabaseHas('extraction_jobs', ['id' => $otherUserJob->id]);
+});

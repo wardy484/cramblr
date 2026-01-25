@@ -29,6 +29,19 @@ class JobImports extends Component
         $this->resetPage();
     }
 
+    public function clearPendingImports(): void
+    {
+        ExtractionJob::query()
+            ->where('user_id', Auth::id())
+            ->whereIn('status', [
+                ExtractionJobStatus::Queued,
+                ExtractionJobStatus::Processing,
+            ])
+            ->delete();
+
+        $this->resetPage();
+    }
+
     /**
      * @return array<string, string>
      */
@@ -44,6 +57,18 @@ class JobImports extends Component
             ExtractionJobStatus::Completed->value => __('Completed'),
             'all' => __('All'),
         ];
+    }
+
+    #[Computed]
+    public function pendingImportCount(): int
+    {
+        return ExtractionJob::query()
+            ->where('user_id', Auth::id())
+            ->whereIn('status', [
+                ExtractionJobStatus::Queued,
+                ExtractionJobStatus::Processing,
+            ])
+            ->count();
     }
 
     #[Computed]

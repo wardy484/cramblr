@@ -5,26 +5,29 @@
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+            <flux:sidebar.header class="gap-1">
+                <div class="grid">
+                    <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                    <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">Daily recall, made simple.</flux:text>
+                </div>
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate class="data-[current=true]:bg-accent data-[current=true]:text-accent-foreground data-[current=true]:shadow-sm">
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="folder-git-2" :href="route('library')" :current="request()->routeIs('library')" wire:navigate>
+                    <flux:sidebar.item icon="folder-git-2" :href="route('library')" :current="request()->routeIs('library')" wire:navigate class="data-[current=true]:bg-accent data-[current=true]:text-accent-foreground data-[current=true]:shadow-sm">
                         {{ __('Library') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="folder-git-2" :href="route('jobs.index')" :current="request()->routeIs('jobs.index')" wire:navigate>
+                    <flux:sidebar.item icon="folder-git-2" :href="route('jobs.index')" :current="request()->routeIs('jobs.index')" wire:navigate class="data-[current=true]:bg-accent data-[current=true]:text-accent-foreground data-[current=true]:shadow-sm">
                         {{ __('Imports') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="book-open-text" :href="route('jobs.create')" :current="request()->routeIs('jobs.create')" wire:navigate>
+                    <flux:sidebar.item icon="book-open-text" :href="route('jobs.create')" :current="request()->routeIs('jobs.create')" wire:navigate class="data-[current=true]:bg-accent data-[current=true]:text-accent-foreground data-[current=true]:shadow-sm">
                         {{ __('Create from images') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="folder-git-2" :href="route('exports.index')" :current="request()->routeIs('exports.index')" wire:navigate>
+                    <flux:sidebar.item icon="folder-git-2" :href="route('exports.index')" :current="request()->routeIs('exports.index')" wire:navigate class="data-[current=true]:bg-accent data-[current=true]:text-accent-foreground data-[current=true]:shadow-sm">
                         {{ __('Exports') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
@@ -32,14 +35,10 @@
 
             <flux:spacer />
 
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
+            <flux:sidebar.nav class="gap-2">
+                <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">
+                    Made for momentum.
+                </flux:text>
             </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />

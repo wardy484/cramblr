@@ -42,3 +42,21 @@ test('marking a card learned schedules a review', function () {
         'rating' => 'good',
     ]);
 });
+
+test('learning a proposed card approves it', function () {
+    $user = User::factory()->create();
+    $deck = Deck::factory()->for($user)->create();
+    $card = Card::factory()->for($user)->for($deck)->create([
+        'status' => CardStatus::Proposed,
+        'study_state' => 'new',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(LearnSession::class, ['deck' => $deck])
+        ->call('markLearned');
+
+    $this->assertDatabaseHas('cards', [
+        'id' => $card->id,
+        'status' => CardStatus::Approved->value,
+    ]);
+});

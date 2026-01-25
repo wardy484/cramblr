@@ -21,6 +21,12 @@ test('authenticated users can visit the dashboard', function () {
     $this->get('/dashboard')->assertOk();
 });
 
+test('dashboard shows the app brand name', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get('/dashboard')->assertSee(config('app.name'));
+});
+
 test('dashboard recommends review when due cards exist', function () {
     $user = User::factory()->create();
     $deck = Deck::factory()->for($user)->create();

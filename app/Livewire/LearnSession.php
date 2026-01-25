@@ -74,7 +74,7 @@ class LearnSession extends Component
 
         $result = $scheduler->scheduleReview($card, 'good', $this->settings);
 
-        $card->update([
+        $updates = [
             'study_state' => $result['study_state'],
             'due_at' => $result['due_at'],
             'interval' => $result['interval'],
@@ -85,7 +85,14 @@ class LearnSession extends Component
             'learning_step_index' => $result['learning_step_index'] ?? null,
             'is_learning' => $result['is_learning'] ?? false,
             'is_relearning' => $result['is_relearning'] ?? false,
-        ]);
+        ];
+
+        if ($card->status === CardStatus::Proposed) {
+            $updates['status'] = CardStatus::Approved;
+            $updates['deck_id'] = $this->deckId;
+        }
+
+        $card->update($updates);
 
         CardReview::query()->create([
             'user_id' => Auth::id(),
@@ -143,7 +150,7 @@ class LearnSession extends Component
         return Card::query()
             ->where('user_id', Auth::id())
             ->where('id', $this->currentCardId)
-            ->where('status', CardStatus::Approved)
+            ->whereIn('status', [CardStatus::Approved, CardStatus::Proposed])
             ->first();
     }
 
@@ -205,8 +212,7 @@ class LearnSession extends Component
     }
 
     /**
-     * @param array<string, mixed> $settings
-     *
+     * @param  array<string, mixed>  $settings
      * @return array<string, mixed>
      */
     private function mergeSettings(array $settings): array
@@ -236,7 +242,7 @@ class LearnSession extends Component
         $cards = Card::query()
             ->where('user_id', Auth::id())
             ->where('deck_id', $this->deckId)
-            ->where('status', CardStatus::Approved)
+            ->whereIn('status', [CardStatus::Approved, CardStatus::Proposed])
             ->where(function ($builder) {
                 $builder->whereNull('study_state')
                     ->orWhere('study_state', 'new');

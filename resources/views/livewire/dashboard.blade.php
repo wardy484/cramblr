@@ -1,14 +1,16 @@
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-        <div class="space-y-1">
-            <flux:heading size="lg">{{ __('Next up') }}</flux:heading>
-            <flux:text class="text-sm text-neutral-500">
-                {{ __('Your recommended study queue based on what is due and new.') }}
-            </flux:text>
+    <div class="rounded-2xl border border-neutral-200 bg-gradient-to-br from-white via-white to-emerald-50/60 p-6 dark:border-neutral-700 dark:from-zinc-900 dark:via-zinc-900 dark:to-emerald-900/20">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="space-y-1">
+                <flux:heading size="lg">{{ __('Next up') }}</flux:heading>
+                <flux:text class="text-sm text-neutral-500">
+                    {{ __('Your recommended study queue based on what is due and new.') }}
+                </flux:text>
+            </div>
+            <flux:button variant="primary" href="{{ route('library') }}">
+                {{ __('Go to library') }}
+            </flux:button>
         </div>
-        <flux:button variant="ghost" href="{{ route('library') }}">
-            {{ __('Go to library') }}
-        </flux:button>
     </div>
 
     @if ($this->recommended)
@@ -48,10 +50,16 @@
         </div>
     @else
         <div class="rounded-xl border border-neutral-200 p-8 text-center dark:border-neutral-700">
-            <flux:heading size="md">{{ __('All caught up!') }}</flux:heading>
+            <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
+                <flux:icon name="sparkles" />
+            </div>
+            <flux:heading size="md" class="mt-4">{{ __('All caught up!') }}</flux:heading>
             <flux:text class="mt-2 text-neutral-500">
                 {{ __('No new or due cards right now. Add cards in the library or check back later.') }}
             </flux:text>
+            <flux:button class="mt-4" variant="outline" href="{{ route('library') }}">
+                {{ __('Add cards') }}
+            </flux:button>
         </div>
     @endif
 

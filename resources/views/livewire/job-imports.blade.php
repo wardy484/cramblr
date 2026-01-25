@@ -2,9 +2,19 @@
     <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <flux:heading size="lg">{{ __('Imports') }}</flux:heading>
-            <flux:button variant="primary" href="{{ route('jobs.create') }}">
-                {{ __('Create from images') }}
-            </flux:button>
+            <div class="flex flex-wrap items-center gap-2">
+                <flux:button
+                    variant="danger"
+                    wire:click="clearPendingImports"
+                    wire:confirm="{{ __('Clear all pending imports?') }}"
+                    :disabled="$this->pendingImportCount() === 0"
+                >
+                    {{ __('Clear pending') }}
+                </flux:button>
+                <flux:button variant="primary" href="{{ route('jobs.create') }}">
+                    {{ __('Create from images') }}
+                </flux:button>
+            </div>
         </div>
 
         <div class="mt-4">
