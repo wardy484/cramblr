@@ -21,6 +21,23 @@ test('study session loads due cards for a deck', function () {
         ->assertSet('currentCardId', $card->id);
 });
 
+test('study session shows answer button before ratings', function () {
+    $user = User::factory()->create();
+    $deck = Deck::factory()->for($user)->create();
+    Card::factory()->for($user)->for($deck)->create([
+        'status' => CardStatus::Approved,
+        'study_state' => 'review',
+        'due_at' => now()->subDay(),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(StudySession::class, ['deck' => $deck])
+        ->assertSee(__('Show answer'))
+        ->assertDontSee(__('Again'))
+        ->call('flip')
+        ->assertSee(__('Again'));
+});
+
 test('rating a card records a review and schedules a due date', function () {
     $user = User::factory()->create();
     $deck = Deck::factory()->for($user)->create();

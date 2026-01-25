@@ -47,34 +47,43 @@
         </div>
 
         <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-3">
+            @if (! $showBack)
+                <div class="flex flex-col items-center gap-3 text-center">
                     <flux:text class="text-sm text-neutral-500">
-                        {{ __('Rate your recall') }}
+                        {{ __('Ready for the answer?') }}
                     </flux:text>
-                    @if ($this->currentStepInfo)
-                        <flux:badge variant="secondary">
-                            {{ __('Step :current of :total', ['current' => $this->currentStepInfo['current'], 'total' => $this->currentStepInfo['total']]) }}
-                        </flux:badge>
-                    @endif
+                    <flux:button variant="primary" wire:click="flip">{{ __('Show answer') }}</flux:button>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    @if ($this->predictedNextInterval)
+            @else
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
                         <flux:text class="text-sm text-neutral-500">
-                            {{ __('Next') }}: {{ $this->predictedNextInterval }}
+                            {{ __('Rate your recall') }}
                         </flux:text>
-                    @endif
-                    <flux:text class="text-sm text-neutral-500">
-                        {{ __('Mode') }}: {{ strtoupper($settings['algorithm']) }}
-                    </flux:text>
+                        @if ($this->currentStepInfo)
+                            <flux:badge variant="secondary">
+                                {{ __('Step :current of :total', ['current' => $this->currentStepInfo['current'], 'total' => $this->currentStepInfo['total']]) }}
+                            </flux:badge>
+                        @endif
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        @if ($this->predictedNextInterval)
+                            <flux:text class="text-sm text-neutral-500">
+                                {{ __('Next') }}: {{ $this->predictedNextInterval }}
+                            </flux:text>
+                        @endif
+                        <flux:text class="text-sm text-neutral-500">
+                            {{ __('Mode') }}: {{ strtoupper($settings['algorithm']) }}
+                        </flux:text>
+                    </div>
                 </div>
-            </div>
-            <div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <flux:button variant="danger" wire:click="rate('again')">{{ __('Again') }}</flux:button>
-                <flux:button variant="outline" wire:click="rate('hard')">{{ __('Hard') }}</flux:button>
-                <flux:button variant="primary" wire:click="rate('good')">{{ __('Good') }}</flux:button>
-                <flux:button variant="filled" wire:click="rate('easy')">{{ __('Easy') }}</flux:button>
-            </div>
+                <div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <flux:button variant="danger" wire:click="rate('again')">{{ __('Again') }}</flux:button>
+                    <flux:button variant="outline" wire:click="rate('hard')">{{ __('Hard') }}</flux:button>
+                    <flux:button variant="primary" wire:click="rate('good')">{{ __('Good') }}</flux:button>
+                    <flux:button variant="filled" wire:click="rate('easy')">{{ __('Easy') }}</flux:button>
+                </div>
+            @endif
         </div>
     @else
         <div class="rounded-xl border border-neutral-200 p-8 text-center dark:border-neutral-700">

@@ -158,6 +158,8 @@ class StudySession extends Component
         }
 
         $cardId = $card->id;
+        $wasLearning = (bool) ($card->is_learning ?? false);
+        $wasRelearning = (bool) ($card->is_relearning ?? false);
         $result = $scheduler->scheduleReview($card, $rating, $this->settings);
 
         $card->update([
@@ -185,7 +187,7 @@ class StudySession extends Component
             'data' => $result['data'] ?? [],
         ]);
 
-        $shouldRequeue = $this->shouldRequeueCard($card, $rating, $result);
+        $shouldRequeue = $this->shouldRequeueCard($wasLearning, $wasRelearning, $rating, $result);
 
         $this->advanceQueue();
 
@@ -376,16 +378,19 @@ class StudySession extends Component
 
         if (preg_match('/^(\d+)m$/', $step, $matches)) {
             $minutes = (int) $matches[1];
+
             return $minutes === 1 ? __('1 minute') : __(':count minutes', ['count' => $minutes]);
         }
 
         if (preg_match('/^(\d+)h$/', $step, $matches)) {
             $hours = (int) $matches[1];
+
             return $hours === 1 ? __('1 hour') : __(':count hours', ['count' => $hours]);
         }
 
         if (preg_match('/^(\d+)d$/', $step, $matches)) {
             $days = (int) $matches[1];
+
             return $days === 1 ? __('1 day') : __(':count days', ['count' => $days]);
         }
 
@@ -393,8 +398,7 @@ class StudySession extends Component
     }
 
     /**
-     * @param array<string, mixed> $settings
-     *
+     * @param  array<string, mixed>  $settings
      * @return array<string, mixed>
      */
     private function mergeSettings(array $settings): array
@@ -467,9 +471,9 @@ class StudySession extends Component
     }
 
     /**
-     * @param array<string, mixed> $result
+     * @param  array<string, mixed>  $result
      */
-    private function shouldRequeueCard(Card $card, string $rating, array $result): bool
+    private function shouldRequeueCard(bool $wasLearning, bool $wasRelearning, string $rating, array $result): bool
     {
         $learningStepsEnabled = (bool) ($this->settings['learning_steps_enabled'] ?? false);
 
@@ -490,7 +494,12 @@ class StudySession extends Component
             if ($againDelayCards === 0) {
                 return true;
             }
+
             return $againDelayCards > 0;
+        }
+
+        if ($wasLearning || $wasRelearning) {
+            return $isLearning || $isRelearning;
         }
 
         if ($isLearning || $isRelearning) {
@@ -501,8 +510,8 @@ class StudySession extends Component
     }
 
     /**
-     * @param array{card_id: string, reversed: bool} $queueItem
-     * @param array<string, mixed> $result
+     * @param  array{card_id: string, reversed: bool}  $queueItem
+     * @param  array<string, mixed>  $result
      */
     private function requeueCard(array $queueItem, Card $card, string $rating, array $result): void
     {
@@ -516,7 +525,7 @@ class StudySession extends Component
     }
 
     /**
-     * @param array<string, mixed> $result
+     * @param  array<string, mixed>  $result
      */
     private function requeuePosition(Card $card, string $rating, array $result): ?int
     {
@@ -527,6 +536,7 @@ class StudySession extends Component
             if ($againDelayCards > 0) {
                 return min($againDelayCards, count($this->queue));
             }
+
             return 0;
         }
 
@@ -536,7 +546,7 @@ class StudySession extends Component
     }
 
     /**
-     * @param array<string, mixed> $result
+     * @param  array<string, mixed>  $result
      */
     private function spacingForRating(Card $card, string $rating, array $result): int
     {
@@ -607,8 +617,7 @@ class StudySession extends Component
     }
 
     /**
-     * @param array<int, string> $excludeIds
-     *
+     * @param  array<int, string>  $excludeIds
      * @return \Illuminate\Support\Collection<int, Card>
      */
     private function dueCards(int $limit, array $excludeIds)
@@ -624,6 +633,8 @@ class StudySession extends Component
                 $builder->whereNull('due_at')
                     ->orWhere('due_at', '<=', now());
             })
+            ->orderByDesc('is_relearning')
+            ->orderByDesc('is_learning')
             ->orderBy('due_at')
             ->orderBy('created_at')
             ->limit($limit)
@@ -631,8 +642,7 @@ class StudySession extends Component
     }
 
     /**
-     * @param array<int, string> $excludeIds
-     *
+     * @param  array<int, string>  $excludeIds
      * @return \Illuminate\Support\Collection<int, Card>
      */
     private function recentCards(int $limit, array $excludeIds)
