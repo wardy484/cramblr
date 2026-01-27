@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->timestamps();
+        });
 
+        Schema::table('decks', function (Blueprint $table) {
             $table->foreign('parent_id')->references('id')->on('decks')->nullOnDelete();
         });
     }
