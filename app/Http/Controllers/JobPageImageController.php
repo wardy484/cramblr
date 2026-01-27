@@ -20,6 +20,19 @@ class JobPageImageController extends Controller
         abort_unless($job->user_id === Auth::id(), 403);
         abort_unless($page->job_id === $job->id, 404);
 
-        return Storage::disk('private')->response($page->image_path);
+        $disk = Storage::disk('private');
+        $path = $page->image_path;
+
+        $response = $disk->response($path);
+
+        $mimeType = $disk->mimeType($path);
+        if ($mimeType) {
+            $response->headers->set('Content-Type', $mimeType);
+        }
+
+        $response->headers->set('Cache-Control', 'private, max-age=600');
+        $response->headers->set('Accept-Ranges', 'bytes');
+
+        return $response;
     }
 }
