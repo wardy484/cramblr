@@ -38,7 +38,7 @@ test('user can retry a failed extraction job', function () {
 
     expect($job->status)->toBe(ExtractionJobStatus::Queued)
         ->and($job->progress_current)->toBe(0)
-        ->and($job->progress_total)->toBe(2)
+        ->and($job->progress_total)->toBe(3)
         ->and($job->error_message)->toBeNull();
 
     expect(JobPage::query()->where('job_id', $job->id)->where('status', JobPageStatus::Queued)->count())

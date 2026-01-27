@@ -40,6 +40,7 @@ class GenerateCardsFromJob implements ShouldQueue
                 $job->update([
                     'status' => ExtractionJobStatus::Failed,
                     'error_message' => 'No extracted items available.',
+                    'progress_current' => $job->progress_total,
                 ]);
 
                 return;
@@ -53,6 +54,7 @@ class GenerateCardsFromJob implements ShouldQueue
                     'generation_raw' => $raw,
                     'status' => ExtractionJobStatus::NeedsReview,
                     'error_message' => null,
+                    'progress_current' => $job->progress_total,
                 ]);
 
                 Card::query()->where('source_job_id', $job->id)->delete();
@@ -88,6 +90,7 @@ class GenerateCardsFromJob implements ShouldQueue
             $job->update([
                 'status' => ExtractionJobStatus::Failed,
                 'error_message' => $exception->getMessage(),
+                'progress_current' => $job->progress_total,
             ]);
         }
     }
@@ -138,7 +141,7 @@ class GenerateCardsFromJob implements ShouldQueue
                 'Return JSON only.',
                 'Front: Use phonetic transcription (romanization) from the pronunciation field, or translation field if pronunciation is not available.',
                 'Back: Use English meaning from source_text field. If source_text is not English, use it as-is.',
-                'Include extra.study_assist with explain, mnemonic, example.',
+                'Include extra.study_assist with explain, mnemonic, example. extra.thai_text must contain only native Thai script (used for audio pronunciation—never romanization).',
                 'Schema: {"cards":[{"front":"string","back":"string","tags":["string"],"extra":{"source_text":"string","page_index":number,"thai_text":null|string,"study_assist":{"explain":string,"mnemonic":string,"example":string}},"confidence":number}]}.',
                 'Error: '.$exception->getMessage(),
                 'Previous response: '.$content,

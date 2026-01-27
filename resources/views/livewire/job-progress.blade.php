@@ -6,16 +6,31 @@
             </div>
 
             <div class="mt-4">
+                @php
+                    $percent = $job->progress_total > 0
+                        ? (int) round(($job->progress_current / $job->progress_total) * 100)
+                        : 0;
+                    $pageCount = max(0, $job->progress_total - 1);
+                    $isGeneratingCards = $job->status->value === 'processing'
+                        && $job->progress_current === $pageCount
+                        && $pageCount > 0;
+                    $isComplete = $job->progress_total > 0 && $job->progress_current >= $job->progress_total;
+                @endphp
                 <div class="flex items-center justify-between text-sm text-neutral-500">
                     <span>{{ $job->progress_current }} / {{ $job->progress_total }}</span>
-                    <span>{{ __('Pages processed') }}</span>
+                    <span>
+                        @if ($isComplete)
+                            {{ __('Complete') }}
+                        @elseif ($isGeneratingCards)
+                            {{ __('Generating cards…') }}
+                        @elseif ($pageCount > 0)
+                            {{ __('Extracting pages') }}
+                        @else
+                            {{ __('Processing') }}
+                        @endif
+                    </span>
                 </div>
                 <div class="mt-2 h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800">
-                    @php
-                        $percent = $job->progress_total > 0
-                            ? (int) round(($job->progress_current / $job->progress_total) * 100)
-                            : 0;
-                    @endphp
                     <div class="h-2 rounded-full bg-blue-500" style="width: {{ $percent }}%"></div>
                 </div>
             </div>

@@ -61,13 +61,13 @@ class OpenAIClient
                     if ($exception instanceof UnserializableResponse) {
                         $response = $exception->response;
                         $errorContext['response_status'] = $response->getStatusCode();
-                        
+
                         $body = $response->getBody();
                         if ($body->isSeekable()) {
                             $body->rewind();
                         }
                         $bodyContent = (string) $body;
-                        
+
                         $errorContext['response_body_preview'] = substr($bodyContent, 0, 500);
                         $errorContext['response_body_length'] = strlen($bodyContent);
                         $errorContext['response_headers'] = $response->getHeaders();
@@ -152,7 +152,7 @@ class OpenAIClient
             'Return JSON only.',
             'Front: Use phonetic transcription (romanization) from the pronunciation field, or translation field if pronunciation is not available.',
             'Back: Use English meaning from source_text field. If source_text is not English, use it as-is.',
-            'In extra, include thai_text field with the Thai script from translation field (if translation_preference was thai) or pronunciation field (if translation_preference was phonetic).',
+            'In extra, include thai_text containing only native Thai script (Thai characters). Use translation when translation_preference was thai, otherwise pronunciation. thai_text is used for audio pronunciation—never put romanization in thai_text.',
             'Also include extra.study_assist with keys: explain, mnemonic, example. Keep each concise and helpful.',
             'Schema: {"cards":[{"front":"string","back":"string","tags":["string"],"extra":{"source_text":"string","page_index":number,"thai_text":null|string,"study_assist":{"explain":string,"mnemonic":string,"example":string}},"confidence":number}]}.',
             'Never hallucinate. If uncertain, set fields to null and lower confidence.',
@@ -238,7 +238,7 @@ class OpenAIClient
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     private function logInfo(string $message, array $context): void
     {
@@ -252,7 +252,7 @@ class OpenAIClient
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     private function logWarning(string $message, array $context): void
     {
@@ -266,7 +266,7 @@ class OpenAIClient
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     private function getPayloadStructure(array $payload): array
@@ -285,18 +285,21 @@ class OpenAIClient
                                         return [
                                             'type' => 'image_url',
                                             'image_url' => [
-                                                'url' => isset($item['image_url']['url']) 
-                                                    ? substr($item['image_url']['url'], 0, 50).'...' 
+                                                'url' => isset($item['image_url']['url'])
+                                                    ? substr($item['image_url']['url'], 0, 50).'...'
                                                     : null,
                                             ],
                                         ];
                                     }
+
                                     return ['type' => $item['type'], 'text' => substr((string) ($item['text'] ?? ''), 0, 100)];
                                 }
+
                                 return $item;
                             }, $message['content']),
                         ];
                     }
+
                     return ['role' => $message['role'] ?? null, 'content' => substr((string) ($message['content'] ?? ''), 0, 100)];
                 }, $value);
             } else {

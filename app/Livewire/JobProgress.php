@@ -57,7 +57,7 @@ class JobProgress extends Component
         $job->update([
             'status' => ExtractionJobStatus::Queued,
             'progress_current' => 0,
-            'progress_total' => $job->pages->count(),
+            'progress_total' => $job->pages->count() + 1,
             'error_message' => null,
         ]);
 
@@ -104,41 +104,45 @@ class JobProgress extends Component
     private function formatPromptWithJson(string $prompt): string
     {
         $pattern = '/Schema:\s*(\{[^}]+\})/';
-        
+
         return preg_replace_callback($pattern, function ($matches) {
             $jsonString = $matches[1];
-            
+
             $indent = 0;
             $formatted = '';
             $inString = false;
             $escapeNext = false;
-            
+
             for ($i = 0; $i < strlen($jsonString); $i++) {
                 $char = $jsonString[$i];
-                
+
                 if ($escapeNext) {
                     $formatted .= $char;
                     $escapeNext = false;
+
                     continue;
                 }
-                
+
                 if ($char === '\\') {
                     $formatted .= $char;
                     $escapeNext = true;
+
                     continue;
                 }
-                
+
                 if ($char === '"') {
-                    $inString = !$inString;
+                    $inString = ! $inString;
                     $formatted .= $char;
+
                     continue;
                 }
-                
+
                 if ($inString) {
                     $formatted .= $char;
+
                     continue;
                 }
-                
+
                 if ($char === '{' || $char === '[') {
                     $formatted .= $char."\n".str_repeat('    ', ++$indent);
                 } elseif ($char === '}' || $char === ']') {
@@ -151,7 +155,7 @@ class JobProgress extends Component
                     $formatted .= $char;
                 }
             }
-            
+
             return 'Schema: '.$formatted.'.';
         }, $prompt);
     }

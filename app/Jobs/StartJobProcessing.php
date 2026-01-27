@@ -30,7 +30,7 @@ class StartJobProcessing implements ShouldQueue
         $job->update([
             'status' => ExtractionJobStatus::Processing,
             'progress_current' => 0,
-            'progress_total' => $job->pages->count(),
+            'progress_total' => $job->pages->count() + 1,
             'error_message' => null,
         ]);
 

@@ -28,7 +28,7 @@ class GenerateCardAudio implements ShouldQueue
 
         $thaiText = data_get($card->extra, 'thai_text');
 
-        if (empty($thaiText)) {
+        if (empty($thaiText) || ! $this->containsThaiScript($thaiText)) {
             return;
         }
 
@@ -45,5 +45,10 @@ class GenerateCardAudio implements ShouldQueue
                 'error' => $exception->getMessage(),
             ]);
         }
+    }
+
+    private function containsThaiScript(string $text): bool
+    {
+        return (bool) preg_match('/[\x{0E00}-\x{0E7F}]/u', $text);
     }
 }
