@@ -23,6 +23,11 @@ class UploadJob extends Component
      */
     public array $images = [];
 
+    /**
+     * @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null
+     */
+    public $newImage = null;
+
     public ?string $refinementPrompt = null;
 
     public string $translationPreference = 'phonetic';
@@ -30,6 +35,26 @@ class UploadJob extends Component
     public bool $generateAudio = true;
 
     public bool $isProcessing = false;
+
+    public function updatedNewImage(): void
+    {
+        if (! $this->newImage) {
+            return;
+        }
+
+        if (count($this->images) >= 20) {
+            $this->newImage->delete();
+            $this->newImage = null;
+            $this->addError('newImage', __('Maximum 20 images allowed.'));
+
+            return;
+        }
+
+        $this->validateOnly('newImage', ['newImage' => 'required|image|max:10240']);
+        $this->images[] = $this->newImage;
+        $this->newImage = null;
+        $this->resetValidation('newImage');
+    }
 
     public function removeImage(int $index): void
     {

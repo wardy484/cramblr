@@ -1,17 +1,20 @@
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
             <flux:heading size="lg">{{ __('Upload study images') }}</flux:heading>
-            <flux:text class="mt-2">{{ __('Add multiple photos from your device or camera.') }}</flux:text>
+            <flux:text class="mt-2">{{ __('Add photos one at a time from your device or camera.') }}</flux:text>
 
             <form wire:submit="submit" class="mt-6 space-y-6">
-                <flux:file-upload wire:model="images" multiple accept="image/*" capture="environment">
+                <flux:file-upload wire:model="newImage" accept="image/*" capture="environment">
                     <flux:file-upload.dropzone
-                        heading="{{ __('Drop files here or click to browse') }}"
-                        text="{{ __('JPG, PNG, GIF up to 10MB') }}"
+                        heading="{{ __('Drop or click to add a photo') }}"
+                        text="{{ __('JPG, PNG, GIF up to 10MB. Up to 20 photos.') }}"
                     />
                 </flux:file-upload>
 
                 @error('images')
+                    <flux:text class="text-sm text-red-600">{{ $message }}</flux:text>
+                @enderror
+                @error('newImage')
                     <flux:text class="text-sm text-red-600">{{ $message }}</flux:text>
                 @enderror
                 @error('images.*')
