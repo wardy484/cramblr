@@ -14,9 +14,9 @@ class GenerateCardAudio implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $cardId)
-    {
-    }
+    public int $timeout = 300;
+
+    public function __construct(public string $cardId) {}
 
     public function handle(OpenAIClient $client): void
     {

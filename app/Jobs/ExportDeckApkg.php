@@ -18,9 +18,9 @@ class ExportDeckApkg implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $exportId)
-    {
-    }
+    public int $timeout = 300;
+
+    public function __construct(public string $exportId) {}
 
     /**
      * Execute the job.

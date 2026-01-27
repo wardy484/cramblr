@@ -20,9 +20,9 @@ class GenerateCardsFromJob implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $jobId)
-    {
-    }
+    public int $timeout = 300;
+
+    public function __construct(public string $jobId) {}
 
     /**
      * Execute the job.
@@ -79,7 +79,7 @@ class GenerateCardsFromJob implements ShouldQueue
                         'source_job_id' => $job->id,
                     ]);
 
-                    if ($job->import_audio && !empty($extra['thai_text'] ?? null)) {
+                    if ($job->import_audio && ! empty($extra['thai_text'] ?? null)) {
                         GenerateCardAudio::dispatch($card->id);
                     }
                 }
@@ -102,7 +102,7 @@ class GenerateCardsFromJob implements ShouldQueue
         foreach ($job->pages as $page) {
             $pageItems = $page->extraction_json['items'] ?? null;
 
-            if (!is_array($pageItems)) {
+            if (! is_array($pageItems)) {
                 continue;
             }
 

@@ -19,9 +19,9 @@ class ExtractPage implements ShouldQueue
 {
     use Batchable, Queueable;
 
-    public function __construct(public string $pageId)
-    {
-    }
+    public int $timeout = 300;
+
+    public function __construct(public string $pageId) {}
 
     /**
      * Execute the job.
@@ -77,8 +77,8 @@ class ExtractPage implements ShouldQueue
         string $translationPreference = 'phonetic'
     ): array {
         $payload = $client->extractionPayload($base64, $refinementPrompt, $pageIndex, $translationPreference);
-            $response = $client->request($payload);
-            $content = $client->responseContent($response);
+        $response = $client->request($payload);
+        $content = $client->responseContent($response);
 
         try {
             $parsed = $validator->validateExtraction($content, $pageIndex);
@@ -146,13 +146,13 @@ class ExtractPage implements ShouldQueue
     }
 
     /**
-     * @param array<string, mixed> $parsed
+     * @param  array<string, mixed>  $parsed
      */
     private function averageConfidence(array $parsed): ?float
     {
         $items = $parsed['items'] ?? [];
 
-        if (!is_array($items) || $items === []) {
+        if (! is_array($items) || $items === []) {
             return null;
         }
 

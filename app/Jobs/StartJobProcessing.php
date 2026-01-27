@@ -14,9 +14,9 @@ class StartJobProcessing implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $jobId)
-    {
-    }
+    public int $timeout = 300;
+
+    public function __construct(public string $jobId) {}
 
     /**
      * Execute the job.
