@@ -1,6 +1,6 @@
-<div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <div class="flex flex-wrap items-center justify-between gap-3">
+<div class="mx-auto flex min-w-0 w-full max-w-5xl flex-col gap-6">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-3">
                     <flux:heading size="lg">{{ __('Review proposed cards') }}</flux:heading>
                     <div class="flex items-center gap-2">
@@ -8,7 +8,7 @@
                         <flux:text class="text-sm">{{ __('Select all') }}</flux:text>
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row sm:gap-2">
                     <flux:button variant="primary" wire:click="approveSelected">{{ __('Approve selected') }}</flux:button>
                     <flux:button variant="danger" wire:click="rejectSelected">{{ __('Reject selected') }}</flux:button>
                 </div>
@@ -23,7 +23,7 @@
                         ? URL::temporarySignedRoute('job-pages.image', now()->addMinutes(10), ['job' => $jobId, 'page' => $pageId])
                         : null;
                 @endphp
-                <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+                <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center gap-2">
                             <input type="checkbox" wire:model="selected.{{ $cardId }}" />
@@ -99,7 +99,7 @@
                     </div>
                 </div>
             @empty
-                <div class="rounded-xl border border-neutral-200 p-6 text-center dark:border-neutral-700">
+                <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 text-center dark:border-neutral-700">
                     <flux:text>{{ __('No proposed cards to review.') }}</flux:text>
                 </div>
             @endforelse

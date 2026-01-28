@@ -1,5 +1,5 @@
-<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+<div class="mx-auto flex min-w-0 w-full max-w-4xl flex-col gap-6">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <flux:heading size="lg">{{ __('Export to Anki') }}</flux:heading>
             <form wire:submit="createExport" class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
                 <flux:select wire:model.defer="deckId" :label="__('Deck')">
@@ -12,7 +12,7 @@
             </form>
         </div>
 
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <flux:heading size="sm">{{ __('Export history') }}</flux:heading>
             <div class="mt-4 space-y-4">
                 @forelse ($exports as $export)

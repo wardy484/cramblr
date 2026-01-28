@@ -42,6 +42,17 @@ class JobImports extends Component
         $this->resetPage();
     }
 
+    public function deleteImport(string $jobId): void
+    {
+        ExtractionJob::query()
+            ->whereKey($jobId)
+            ->where('user_id', Auth::id())
+            ->firstOrFail()
+            ->delete();
+
+        $this->resetPage();
+    }
+
     /**
      * @return array<string, string>
      */

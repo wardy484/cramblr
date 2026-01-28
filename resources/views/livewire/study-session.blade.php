@@ -1,5 +1,5 @@
-<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+<div class="mx-auto flex min-w-0 w-full max-w-4xl flex-col gap-6">
+        <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
             <flux:heading size="lg">{{ __('Study') }} {{ $deckName }}</flux:heading>
             <flux:badge variant="secondary">
@@ -17,7 +17,7 @@
     </div>
 
     @if ($this->currentCard)
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <button type="button" wire:click="flip" class="flex w-full flex-col gap-3 text-left">
                 <flux:text class="text-xs uppercase text-neutral-500">
                     {{ $showBack ? __('Back') : __('Front') }}
@@ -46,7 +46,7 @@
             @endif
         </div>
 
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             @if (! $showBack)
                 <div class="flex flex-col items-center gap-3 text-center">
                     <flux:text class="text-sm text-neutral-500">
@@ -77,16 +77,16 @@
                         </flux:text>
                     </div>
                 </div>
-                <div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <flux:button variant="danger" wire:click="rate('again')">{{ __('Again') }}</flux:button>
-                    <flux:button variant="outline" wire:click="rate('hard')">{{ __('Hard') }}</flux:button>
-                    <flux:button variant="primary" wire:click="rate('good')">{{ __('Good') }}</flux:button>
-                    <flux:button variant="filled" wire:click="rate('easy')">{{ __('Easy') }}</flux:button>
+                <div class="mt-4 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+                    <flux:button variant="danger" class="min-h-11" wire:click="rate('again')">{{ __('Again') }}</flux:button>
+                    <flux:button variant="outline" class="min-h-11" wire:click="rate('hard')">{{ __('Hard') }}</flux:button>
+                    <flux:button variant="primary" class="min-h-11" wire:click="rate('good')">{{ __('Good') }}</flux:button>
+                    <flux:button variant="filled" class="min-h-11" wire:click="rate('easy')">{{ __('Easy') }}</flux:button>
                 </div>
             @endif
         </div>
     @else
-        <div class="rounded-xl border border-neutral-200 p-8 text-center dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-6 sm:p-8 text-center dark:border-neutral-700">
             <flux:heading size="md">{{ __('All caught up!') }}</flux:heading>
             <flux:text class="mt-2 text-neutral-500">
                 {{ __('No due cards right now. Come back later or switch to Learn mode.') }}
@@ -94,7 +94,7 @@
         </div>
     @endif
 
-    <flux:modal wire:model.self="showSettings" class="min-w-[22rem]">
+    <flux:modal wire:model.self="showSettings" class="w-full max-w-[min(22rem,calc(100vw-2rem))]">
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('Study settings') }}</flux:heading>
@@ -169,7 +169,7 @@
         </div>
     </flux:modal>
 
-    <flux:modal wire:model.self="showAiPanel" variant="floating" class="min-w-[22rem]">
+    <flux:modal wire:model.self="showAiPanel" variant="floating" class="w-full max-w-[min(22rem,calc(100vw-2rem))]">
         <div class="space-y-4">
             <div>
                 <flux:heading size="md">{{ __('AI Study Assist') }}</flux:heading>

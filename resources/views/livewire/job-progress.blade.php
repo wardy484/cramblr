@@ -1,5 +1,5 @@
-<div class="mx-auto flex w-full max-w-4xl flex-col gap-6" wire:poll.5s>
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+<div class="mx-auto flex min-w-0 w-full max-w-4xl flex-col gap-6" wire:poll.5s>
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <flux:heading size="lg">{{ __('Processing job') }}</flux:heading>
                 <flux:badge>{{ ucfirst($job->status->value) }}</flux:badge>
@@ -53,7 +53,7 @@
             @endif
         </div>
 
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <flux:heading size="sm">{{ __('Extraction prompt') }}</flux:heading>
             <div class="mt-2 flex items-center gap-2">
                 <flux:text class="text-sm text-neutral-500">
@@ -81,7 +81,7 @@
             </div>
         </div>
 
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <flux:heading size="sm">{{ __('Pages') }}</flux:heading>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 @foreach ($job->pages as $page)

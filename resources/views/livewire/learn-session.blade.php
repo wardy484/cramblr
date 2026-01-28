@@ -1,5 +1,5 @@
-<div class="mx-auto flex w-full max-w-4xl flex-col gap-6">
-    <div class="flex flex-wrap items-center justify-between gap-3">
+<div class="mx-auto flex min-w-0 w-full max-w-4xl flex-col gap-6">
+    <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-3">
             <flux:heading size="lg">{{ __('Learn') }} {{ $deckName }}</flux:heading>
             <flux:badge variant="secondary">
@@ -12,7 +12,7 @@
     </div>
 
     @if ($this->currentCard)
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <button type="button" wire:click="flip" class="flex w-full flex-col gap-3 text-left">
                 <flux:text class="text-xs uppercase text-neutral-500">
                     {{ $showBack ? __('Back') : __('Front') }}
@@ -41,16 +41,16 @@
             @endif
         </div>
 
-        <div class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
             <flux:text class="text-sm text-neutral-500">{{ __('Check your understanding') }}</flux:text>
             <div class="mt-4 flex flex-wrap gap-3">
-                <flux:button variant="primary" wire:click="markLearned">{{ __('I got it') }}</flux:button>
-                <flux:button variant="outline" wire:click="requestAssist('explain')">{{ __('Explain it') }}</flux:button>
-                <flux:button variant="outline" wire:click="requestAssist('mnemonic')">{{ __('Give mnemonic') }}</flux:button>
+                <flux:button variant="primary" class="min-h-11" wire:click="markLearned">{{ __('I got it') }}</flux:button>
+                <flux:button variant="outline" class="min-h-11" wire:click="requestAssist('explain')">{{ __('Explain it') }}</flux:button>
+                <flux:button variant="outline" class="min-h-11" wire:click="requestAssist('mnemonic')">{{ __('Give mnemonic') }}</flux:button>
             </div>
         </div>
     @else
-        <div class="rounded-xl border border-neutral-200 p-8 text-center dark:border-neutral-700">
+        <div class="rounded-xl border border-neutral-200 p-6 sm:p-8 text-center dark:border-neutral-700">
             <flux:heading size="md">{{ __('No new cards to learn') }}</flux:heading>
             <flux:text class="mt-2 text-neutral-500">
                 {{ __('Pick another deck or switch to Study mode for reviews.') }}
@@ -58,7 +58,7 @@
         </div>
     @endif
 
-    <flux:modal wire:model.self="showAiPanel" variant="floating" class="min-w-[22rem]">
+    <flux:modal wire:model.self="showAiPanel" variant="floating" class="w-full max-w-[min(22rem,calc(100vw-2rem))]">
         <div class="space-y-4">
             <div>
                 <flux:heading size="md">{{ __('AI Study Assist') }}</flux:heading>

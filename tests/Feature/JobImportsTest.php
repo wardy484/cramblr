@@ -79,3 +79,33 @@ test('user can clear pending imports', function () {
     $this->assertDatabaseHas('extraction_jobs', ['id' => $failed->id]);
     $this->assertDatabaseHas('extraction_jobs', ['id' => $otherUserJob->id]);
 });
+
+test('user can delete an import', function () {
+    $user = User::factory()->create();
+
+    $job = ExtractionJob::factory()->for($user)->create([
+        'status' => ExtractionJobStatus::Queued,
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(JobImports::class)
+        ->call('deleteImport', $job->id);
+
+    $this->assertDatabaseMissing('extraction_jobs', ['id' => $job->id]);
+});
+
+test('user cannot delete another users import', function () {
+    $user = User::factory()->create();
+
+    $otherUserJob = ExtractionJob::factory()->create([
+        'status' => ExtractionJobStatus::Queued,
+    ]);
+
+    $this->actingAs($user);
+
+    expect(fn () => Livewire::test(JobImports::class)->call('deleteImport', $otherUserJob->id))
+        ->toThrow(Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    $this->assertDatabaseHas('extraction_jobs', ['id' => $otherUserJob->id]);
+});

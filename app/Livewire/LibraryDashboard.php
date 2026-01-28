@@ -40,6 +40,8 @@ class LibraryDashboard extends Component
 
     public bool $showDeleteModal = false;
 
+    public bool $showCreateDeckModal = false;
+
     public function render(): View
     {
         return view('livewire.library-dashboard', [
@@ -131,7 +133,7 @@ class LibraryDashboard extends Component
     {
         $currentPageCardIds = $this->cards()->pluck('id')->toArray();
 
-        return !empty(array_intersect($this->selectedCards, $currentPageCardIds));
+        return ! empty(array_intersect($this->selectedCards, $currentPageCardIds));
     }
 
     public function createDeck(): void
@@ -152,7 +154,7 @@ class LibraryDashboard extends Component
             'description' => $validated['newDeckDescription'],
         ]);
 
-        $this->reset('newDeckName', 'newDeckDescription', 'newDeckParentId');
+        $this->reset('newDeckName', 'newDeckDescription', 'newDeckParentId', 'showCreateDeckModal');
     }
 
     /**
@@ -207,7 +209,7 @@ class LibraryDashboard extends Component
 
         if ($this->status !== '') {
             $query->where('status', $this->status);
-        } elseif (!$this->showProposed) {
+        } elseif (! $this->showProposed) {
             $query->where('status', '!=', CardStatus::Proposed->value);
         }
 
@@ -226,7 +228,7 @@ class LibraryDashboard extends Component
     }
 
     /**
-     * @param array<int, string> $deckIds
+     * @param  array<int, string>  $deckIds
      */
     private function deleteEmptyDecks(array $deckIds): void
     {
