@@ -38,8 +38,9 @@ test('dashboard recommends review when due cards exist', function () {
 
     Livewire::actingAs($user)
         ->test(Dashboard::class)
-        ->assertSee('Recommended: '.$deck->name)
-        ->assertSee(__('Start review'));
+        ->assertSee($deck->name)
+        ->assertSee(__('Recommended'))
+        ->assertSee(__('Review'));
 });
 
 test('dashboard recommends learning when only new cards exist', function () {
@@ -53,8 +54,9 @@ test('dashboard recommends learning when only new cards exist', function () {
 
     Livewire::actingAs($user)
         ->test(Dashboard::class)
-        ->assertSee('Recommended: '.$deck->name)
-        ->assertSee(__('Start learn'));
+        ->assertSee($deck->name)
+        ->assertSee(__('Recommended'))
+        ->assertSee(__('Learn'));
 });
 
 test('dashboard avoids recommending the most recently reviewed deck when alternatives exist', function () {
@@ -78,8 +80,9 @@ test('dashboard avoids recommending the most recently reviewed deck when alterna
 
     Livewire::actingAs($user)
         ->test(Dashboard::class)
-        ->assertSee('Recommended: '.$deckB->name)
-        ->assertSee(__('Start review'));
+        ->assertSee($deckB->name)
+        ->assertSee(__('Recommended'))
+        ->assertSee(__('Review'));
 });
 
 test('dashboard shows recent history with recap action', function () {

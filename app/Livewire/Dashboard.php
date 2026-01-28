@@ -174,6 +174,51 @@ class Dashboard extends Component
     }
 
     /**
+     * Up to 3 study options: recommended first, then alternatives from review/learn.
+     *
+     * @return array<int, array{type: string, deck_id: string, deck_name: string, count: int, is_recommended: bool}>
+     */
+    #[Computed]
+    public function nextUpOptions(): array
+    {
+        $options = [];
+        $usedDeckIds = [];
+
+        $recommended = $this->recommended;
+        if ($recommended !== null) {
+            $options[] = [
+                'type' => $recommended['type'],
+                'deck_id' => $recommended['deck_id'],
+                'deck_name' => $recommended['deck_name'],
+                'count' => $recommended['count'],
+                'is_recommended' => true,
+            ];
+            $usedDeckIds[$recommended['deck_id']] = true;
+        }
+
+        foreach (array_merge($this->reviewDecks, $this->learnDecks) as $deck) {
+            if (count($options) >= 3) {
+                break;
+            }
+            if (isset($usedDeckIds[$deck['deck_id']])) {
+                continue;
+            }
+            $usedDeckIds[$deck['deck_id']] = true;
+            $type = $deck['review_due'] > 0 ? 'review' : 'learn';
+            $count = $type === 'review' ? $deck['review_due'] : $deck['new_count'];
+            $options[] = [
+                'type' => $type,
+                'deck_id' => $deck['deck_id'],
+                'deck_name' => $deck['deck_name'],
+                'count' => $count,
+                'is_recommended' => false,
+            ];
+        }
+
+        return $options;
+    }
+
+    /**
      * @return array<int, array{deck_id: string, deck_name: string, review_due: int, new_count: int}>
      */
     private function deckSummaries(): array

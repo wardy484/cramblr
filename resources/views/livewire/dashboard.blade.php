@@ -1,67 +1,65 @@
 <div class="mx-auto flex min-w-0 w-full max-w-5xl flex-col gap-6">
-    <div class="rounded-2xl border border-neutral-200 bg-gradient-to-br from-white via-white to-emerald-50/60 p-4 sm:p-6 dark:border-neutral-700 dark:from-zinc-900 dark:via-zinc-900 dark:to-emerald-900/20">
-        <div class="flex flex-wrap items-start justify-between gap-3">
+    <section class="rounded-xl border border-neutral-200 p-5 dark:border-neutral-700 sm:p-6">
+        <div class="mb-5 flex items-center justify-between gap-3">
             <div class="space-y-1">
                 <flux:heading size="lg">{{ __('Next up') }}</flux:heading>
                 <flux:text class="text-sm text-neutral-500">
-                    {{ __('Your recommended study queue based on what is due and new.') }}
+                    {{ __('Pick what to study—recommended first, or choose another option.') }}
                 </flux:text>
             </div>
-            <flux:button variant="primary" href="{{ route('library') }}">
-                {{ __('Go to library') }}
-            </flux:button>
         </div>
-    </div>
-
-    @if ($this->recommended)
-        <div class="rounded-xl border border-neutral-200 p-4 sm:p-6 dark:border-neutral-700">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="space-y-2">
-                    <flux:heading size="md">{{ __('Recommended now') }}</flux:heading>
-                    <flux:text class="text-sm text-neutral-500">
-                        {{ __('Recommended') }}: {{ $this->recommended['deck_name'] }}
-                    </flux:text>
-                    <flux:text class="text-sm text-neutral-500">
-                        @if ($this->recommended['type'] === 'review')
-                            {{ __(':count cards due', ['count' => $this->recommended['count']]) }}
-                        @else
-                            {{ __(':count new cards', ['count' => $this->recommended['count']]) }}
-                        @endif
-                    </flux:text>
-                    @if ($this->recentDeck)
-                        <flux:text class="text-sm text-neutral-500">
-                            {{ __('Recently studied') }}: {{ $this->recentDeck['deck_name'] }}
-                            • {{ $this->recentDeck['reviewed_at']->diffForHumans() }}
-                        </flux:text>
-                    @endif
+        @if (count($this->nextUpOptions) > 0)
+            <ul class="flex flex-col gap-3" role="list">
+                @foreach ($this->nextUpOptions as $option)
+                    <li wire:key="next-up-{{ $option['deck_id'] }}">
+                        <flux:card size="sm" class="border-l-4 {{ $option['is_recommended'] ? 'border-l-emerald-500' : 'border-l-neutral-300 dark:border-l-neutral-600' }} transition hover:border-neutral-300 dark:hover:bg-white/5 dark:hover:border-neutral-600">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <flux:heading size="sm" class="font-medium">{{ $option['deck_name'] }}</flux:heading>
+                                        @if ($option['is_recommended'])
+                                            <flux:badge variant="primary" size="sm">{{ __('Recommended') }}</flux:badge>
+                                        @endif
+                                    </div>
+                                    <flux:text class="mt-0.5 block text-sm text-neutral-500 dark:text-neutral-400">
+                                        @if ($option['type'] === 'review')
+                                            {{ __(':count cards due', ['count' => $option['count']]) }}
+                                        @else
+                                            {{ __(':count new cards', ['count' => $option['count']]) }}
+                                        @endif
+                                    </flux:text>
+                                </div>
+                                <div class="flex w-full shrink-0 justify-end gap-2 sm:w-auto">
+                                    @if ($option['type'] === 'review')
+                                        <flux:button variant="{{ $option['is_recommended'] ? 'primary' : 'outline' }}" size="sm" href="{{ route('decks.study', $option['deck_id']) }}">
+                                            {{ __('Review') }}
+                                        </flux:button>
+                                    @else
+                                        <flux:button variant="{{ $option['is_recommended'] ? 'primary' : 'outline' }}" size="sm" href="{{ route('decks.learn', $option['deck_id']) }}">
+                                            {{ __('Learn') }}
+                                        </flux:button>
+                                    @endif
+                                </div>
+                            </div>
+                        </flux:card>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <flux:card size="sm" class="border border-dashed border-neutral-300 py-8 text-center dark:border-neutral-600">
+                <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
+                    <flux:icon name="sparkles" />
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    @if ($this->recommended['type'] === 'review')
-                        <flux:button variant="primary" href="{{ route('decks.study', $this->recommended['deck_id']) }}">
-                            {{ __('Start review') }}
-                        </flux:button>
-                    @else
-                        <flux:button variant="primary" href="{{ route('decks.learn', $this->recommended['deck_id']) }}">
-                            {{ __('Start learn') }}
-                        </flux:button>
-                    @endif
-                </div>
-            </div>
-        </div>
-    @else
-        <div class="rounded-xl border border-neutral-200 p-6 sm:p-8 text-center dark:border-neutral-700">
-            <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
-                <flux:icon name="sparkles" />
-            </div>
-            <flux:heading size="md" class="mt-4">{{ __('All caught up!') }}</flux:heading>
-            <flux:text class="mt-2 text-neutral-500">
-                {{ __('No new or due cards right now. Add cards in the library or check back later.') }}
-            </flux:text>
-            <flux:button class="mt-4" variant="outline" href="{{ route('library') }}">
-                {{ __('Add cards') }}
-            </flux:button>
-        </div>
-    @endif
+                <flux:heading size="md" class="mt-4">{{ __('All caught up!') }}</flux:heading>
+                <flux:text class="mt-2 block text-sm text-neutral-500">
+                    {{ __('No new or due cards right now. Add cards in the library or check back later.') }}
+                </flux:text>
+                <flux:button class="mt-4" variant="outline" href="{{ route('library') }}">
+                    {{ __('Add cards') }}
+                </flux:button>
+            </flux:card>
+        @endif
+    </section>
 
     <section class="rounded-xl border border-neutral-200 p-5 dark:border-neutral-700 sm:p-6">
         <div class="mb-5 flex items-center justify-between gap-3">
@@ -81,7 +79,7 @@
                                     {{ __(':count reviews', ['count' => $history['review_count']]) }}
                                 </flux:text>
                             </div>
-                            <div class="flex shrink-0 gap-2">
+                            <div class="flex w-full shrink-0 justify-end gap-2 sm:w-auto">
                                 <flux:button variant="ghost" size="sm" href="{{ route('decks.study', $history['deck_id']) }}">
                                     {{ __('Review') }}
                                 </flux:button>

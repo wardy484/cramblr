@@ -7,14 +7,18 @@ use App\Models\Card;
 use App\Models\Deck;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class LibraryDashboard extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     public ?string $selectedDeckId = null;
@@ -33,107 +37,275 @@ class LibraryDashboard extends Component
 
     public ?string $newDeckParentId = null;
 
-    /**
-     * @var array<string>
-     */
-    public array $selectedCards = [];
-
-    public bool $showDeleteModal = false;
-
     public bool $showCreateDeckModal = false;
+
+    public bool $showRenameDeckModal = false;
+
+    public ?string $deckToRename = null;
+
+    public string $renameDeckName = '';
+
+    public bool $showDeleteDeckModal = false;
+
+    public ?string $deckToDelete = null;
+
+    public bool $showEditCardModal = false;
+
+    public ?string $editingCardId = null;
+
+    public string $editCardFront = '';
+
+    public string $editCardBack = '';
+
+    public string $editCardTags = '';
+
+    public string $editCardStatus = '';
+
+    public ?string $editCardDeckId = null;
+
+    /**
+     * @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null
+     */
+    public $editCardAudio = null;
 
     public function render(): View
     {
         return view('livewire.library-dashboard', [
             'decks' => $this->deckTree(),
             'cards' => $this->cards(),
+            'editingCard' => $this->editingCard(),
+            'selectedDeck' => $this->selectedDeck(),
         ])->layout('layouts.app', ['title' => __('Library')]);
+    }
+
+    #[Computed]
+    public function editingCard(): ?Card
+    {
+        if (! $this->editingCardId) {
+            return null;
+        }
+
+        return Card::query()
+            ->where('user_id', Auth::id())
+            ->find($this->editingCardId);
+    }
+
+    #[Computed]
+    public function selectedDeck(): ?Deck
+    {
+        if (! $this->selectedDeckId) {
+            return null;
+        }
+
+        return Deck::query()
+            ->where('user_id', Auth::id())
+            ->find($this->selectedDeckId);
     }
 
     public function updatedSearch(): void
     {
         $this->resetPage();
-        $this->selectedCards = [];
     }
 
     public function updatedStatus(): void
     {
         $this->resetPage();
-        $this->selectedCards = [];
     }
 
     public function updatedTag(): void
     {
         $this->resetPage();
-        $this->selectedCards = [];
     }
 
     public function updatedShowProposed(): void
     {
         $this->resetPage();
-        $this->selectedCards = [];
     }
 
     public function selectDeck(?string $deckId): void
     {
         $this->selectedDeckId = $deckId;
         $this->resetPage();
-        $this->selectedCards = [];
     }
 
-    public function toggleSelectAll(): void
+    public function openRenameDeckModal(string $deckId): void
     {
-        $currentPageCardIds = $this->cards()->pluck('id')->toArray();
-
-        if ($this->areAllCurrentPageCardsSelected()) {
-            $this->selectedCards = array_values(array_diff($this->selectedCards, $currentPageCardIds));
-        } else {
-            $this->selectedCards = array_values(array_unique(array_merge($this->selectedCards, $currentPageCardIds)));
-        }
+        $deck = Deck::query()
+            ->where('user_id', Auth::id())
+            ->findOrFail($deckId);
+        $this->deckToRename = $deck->id;
+        $this->renameDeckName = $deck->name;
+        $this->showRenameDeckModal = true;
     }
 
-    public function deleteSelected(): void
+    public function renameDeck(): void
     {
-        if (empty($this->selectedCards)) {
+        $validated = $this->validate([
+            'deckToRename' => ['required', Rule::exists('decks', 'id')->where('user_id', Auth::id())],
+            'renameDeckName' => ['required', 'string', 'max:255'],
+        ]);
+
+        Deck::query()
+            ->where('user_id', Auth::id())
+            ->whereKey($validated['deckToRename'])
+            ->update(['name' => $validated['renameDeckName']]);
+
+        $this->reset('deckToRename', 'renameDeckName', 'showRenameDeckModal');
+    }
+
+    public function openDeleteDeckModal(string $deckId): void
+    {
+        Deck::query()
+            ->where('user_id', Auth::id())
+            ->findOrFail($deckId);
+        $this->deckToDelete = $deckId;
+        $this->showDeleteDeckModal = true;
+    }
+
+    public function confirmDeleteDeck(): void
+    {
+        if (! $this->deckToDelete) {
             return;
         }
 
-        $deckIds = Card::query()
+        $deck = Deck::query()
             ->where('user_id', Auth::id())
-            ->whereIn('id', $this->selectedCards)
-            ->pluck('deck_id')
-            ->unique()
-            ->all();
+            ->findOrFail($this->deckToDelete);
 
-        Card::query()
-            ->where('user_id', Auth::id())
-            ->whereIn('id', $this->selectedCards)
-            ->delete();
-
-        $this->deleteEmptyDecks($deckIds);
-
-        $this->selectedCards = [];
-        $this->showDeleteModal = false;
-    }
-
-    #[Computed]
-    public function areAllCurrentPageCardsSelected(): bool
-    {
-        $currentPageCardIds = $this->cards()->pluck('id')->toArray();
-
-        if (empty($currentPageCardIds)) {
-            return false;
+        foreach ($deck->children as $child) {
+            $this->deleteDeckRecursive($child);
         }
 
-        return count(array_intersect($this->selectedCards, $currentPageCardIds)) === count($currentPageCardIds);
+        $deck->cards()->delete();
+        $deck->delete();
+
+        if ($this->selectedDeckId === $this->deckToDelete) {
+            $this->selectedDeckId = null;
+        }
+
+        $this->reset('deckToDelete', 'showDeleteDeckModal');
     }
 
-    #[Computed]
-    public function isSomeCurrentPageCardsSelected(): bool
+    public function openEditCardModal(string $cardId): void
     {
-        $currentPageCardIds = $this->cards()->pluck('id')->toArray();
+        $card = Card::query()
+            ->where('user_id', Auth::id())
+            ->with('deck')
+            ->findOrFail($cardId);
 
-        return ! empty(array_intersect($this->selectedCards, $currentPageCardIds));
+        $this->authorize('update', $card);
+
+        $this->editingCardId = $card->id;
+        $this->editCardFront = $card->front;
+        $this->editCardBack = $card->back;
+        $this->editCardTags = implode(', ', $card->tags ?? []);
+        $this->editCardStatus = $card->status->value;
+        $this->editCardDeckId = $card->deck_id;
+        $this->editCardAudio = null;
+        $this->showEditCardModal = true;
+    }
+
+    public function closeEditCardModal(): void
+    {
+        $this->reset(
+            'showEditCardModal',
+            'editingCardId',
+            'editCardFront',
+            'editCardBack',
+            'editCardTags',
+            'editCardStatus',
+            'editCardDeckId',
+            'editCardAudio'
+        );
+    }
+
+    public function saveCard(): void
+    {
+        if (! $this->editingCardId) {
+            return;
+        }
+
+        $card = Card::query()
+            ->where('user_id', Auth::id())
+            ->findOrFail($this->editingCardId);
+
+        $this->authorize('update', $card);
+
+        if ($this->editCardAudio && $card->audio_path !== null) {
+            $this->addError('editCardAudio', __('Remove existing audio before uploading a new file.'));
+
+            return;
+        }
+
+        $validated = $this->validate([
+            'editCardFront' => ['required', 'string', 'max:65535'],
+            'editCardBack' => ['required', 'string', 'max:65535'],
+            'editCardTags' => ['nullable', 'string', 'max:1000'],
+            'editCardStatus' => ['required', Rule::in(array_column(CardStatus::cases(), 'value'))],
+            'editCardDeckId' => ['required', Rule::exists('decks', 'id')->where('user_id', Auth::id())],
+            'editCardAudio' => ['nullable', 'file', 'mimes:mp3,mpeg,wav,ogg,m4a', 'max:10240'],
+        ]);
+
+        $tags = array_values(array_filter(array_map('trim', explode(',', $validated['editCardTags'] ?? ''))));
+
+        $card->update([
+            'front' => $validated['editCardFront'],
+            'back' => $validated['editCardBack'],
+            'tags' => $tags,
+            'status' => CardStatus::from($validated['editCardStatus']),
+            'deck_id' => $validated['editCardDeckId'],
+        ]);
+
+        if ($this->editCardAudio) {
+            if ($card->audio_path && Storage::disk('private')->exists($card->audio_path)) {
+                Storage::disk('private')->delete($card->audio_path);
+            }
+            $path = $this->editCardAudio->storeAs(
+                'cards/'.$card->id,
+                Str::uuid()->toString().'.'.$this->editCardAudio->extension(),
+                'private'
+            );
+            $card->update(['audio_path' => $path]);
+        }
+
+        $this->reset(
+            'showEditCardModal',
+            'editingCardId',
+            'editCardFront',
+            'editCardBack',
+            'editCardTags',
+            'editCardStatus',
+            'editCardDeckId',
+            'editCardAudio'
+        );
+    }
+
+    public function removeCardAudio(string $cardId): void
+    {
+        $card = Card::query()
+            ->where('user_id', Auth::id())
+            ->findOrFail($cardId);
+
+        $this->authorize('update', $card);
+
+        if ($card->audio_path && Storage::disk('private')->exists($card->audio_path)) {
+            Storage::disk('private')->delete($card->audio_path);
+        }
+
+        $card->update(['audio_path' => null]);
+
+        if ($this->editingCardId === $cardId) {
+            $this->editCardAudio = null;
+        }
+    }
+
+    private function deleteDeckRecursive(Deck $deck): void
+    {
+        foreach ($deck->children as $child) {
+            $this->deleteDeckRecursive($child);
+        }
+        $deck->cards()->delete();
+        $deck->delete();
     }
 
     public function createDeck(): void
@@ -225,21 +397,5 @@ class LibraryDashboard extends Component
         }
 
         return $query->latest()->paginate(20);
-    }
-
-    /**
-     * @param  array<int, string>  $deckIds
-     */
-    private function deleteEmptyDecks(array $deckIds): void
-    {
-        if ($deckIds === []) {
-            return;
-        }
-
-        Deck::query()
-            ->where('user_id', Auth::id())
-            ->whereIn('id', $deckIds)
-            ->doesntHave('cards')
-            ->delete();
     }
 }
